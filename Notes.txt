@@ -1,0 +1,2 @@
+1)Import LSH
+2)Figure Out how to start the graph connection process(Graph is directed,from which direction should i start)
