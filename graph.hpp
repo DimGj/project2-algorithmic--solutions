@@ -11,17 +11,15 @@
 #include <cmath>
 #include <bits/stdc++.h>
 #include <chrono>
+#include "./LSH/lsh.hpp"
 
 using namespace std;
-typedef struct GraphPoint{
-    vector<byte>* Data;
-    vector<GraphPoint*> Neighbors;
-}GraphPoint;
 
 class Graph{
     private:
-        vector<GraphPoint*> GraphVector;
+        vector<GraphPoint>* GraphVector;
     public:
-        Graph();
-        vector<GraphPoint*> GetNeighbors(GraphPoint& CurrentPoint);
+        Graph(int GraphNearestNeighbors,int NearestNeighbors,vector<vector<byte>>& Images);
+        ~Graph();
+        vector<GraphPoint*> GetNeighbors(int PointID);
 };
