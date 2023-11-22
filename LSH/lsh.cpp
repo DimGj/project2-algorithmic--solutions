@@ -67,7 +67,7 @@ double LSH::Hash(GraphPoint& Point,bool AssignToParent)
             /*Check the bucket where the hash function leads us*/
             for(int j = 0;j < hashTables[i][bucket].size();j++)
             {
-                if(!hashTables[i][bucket][j]->IsAssigned && hashTables[i][bucket][j]->PointID != Point.PointID)
+                if(hashTables[i][bucket][j]->PointID != Point.PointID)
                 {
                     /*Create a bucket element instance to store the values of the element in the bucket*/
                     hashTables[i][bucket][j]->Distance = PNorm(Point.Vector,hashTables[i][bucket][j]->Vector,2);
@@ -83,10 +83,7 @@ double LSH::Hash(GraphPoint& Point,bool AssignToParent)
             return 0.0;
         sort(Candidates.begin(),Candidates.end(),ComparisonFunctionByDistance);
         for(int i = 0;i < GraphNearestNeighbors; i++)
-        {
             Point.Neighbors.push_back(Candidates[i]);
-            Candidates[i]->IsAssigned = true;
-        }
     }
     return 0.0;
 }

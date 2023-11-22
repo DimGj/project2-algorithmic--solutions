@@ -14,3 +14,5 @@
 #include "graph.hpp"
 
 using namespace std;
+
+void GNNS(vector<byte>* QueryPoint,Graph* graph,int Expansions,int RandomRestarts,int NearestNeighbors,int GreedySteps);

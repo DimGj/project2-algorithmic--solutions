@@ -1,7 +1,3 @@
-1)Import LSH
-2)Figure Out how to start the graph connection process(Graph is directed,from which direction should i start)
-3)Graph Construction : 
-    i)Hash all Datapoints in buckets with LSH.
-    ii)Iterate over all points after hash and assign k-points of corresponding bucket as neighbours to i-th item.
-    iii)Delete points from bucket,since they wont be assigned to it.
-    iv)Directed graph means only parent has access to children,
+1)Implement write to file
+2)Import LSH hash for points etc.
+3)Import HyperCube

@@ -23,7 +23,7 @@ typedef struct GraphPoint{
     vector<byte>* Vector;
     double Distance;
     int PointID;
-    bool IsAssigned = false;
+    bool IsExpanded = false;
     vector<GraphPoint*> Neighbors;
 }GraphPoint;
 

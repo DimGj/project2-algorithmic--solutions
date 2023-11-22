@@ -15,6 +15,8 @@
 
 using namespace std;
 
+bool NeighborsComparisonFunction(tuple<GraphPoint*,double>& A,tuple<GraphPoint*,double>& B);
+
 class Graph{
     private:
         vector<GraphPoint>* GraphVector;
@@ -22,4 +24,7 @@ class Graph{
         Graph(int GraphNearestNeighbors,int NearestNeighbors,vector<vector<byte>>& Images);
         ~Graph();
         vector<GraphPoint*> GetNeighbors(int PointID);
+        int GetGraphSize();
+        int GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<byte>* QueryPoint);
+        int GetNeighborsCount(int PointID);
 };
