@@ -1,3 +1,2 @@
-1)Implement write to file
-2)Import LSH hash for points etc.
-3)Import HyperCube
+1)Implement MRNG
+2)Compare performance of HyperCube,LSH with MRNG and GNNS
