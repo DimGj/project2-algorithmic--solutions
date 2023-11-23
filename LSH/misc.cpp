@@ -200,11 +200,16 @@ void GetArgs(int argc,char** argv,char** input_file,char** query_file,char** out
 
 
 /*Opens a binary file and returns a 2D vector with all its images*/
-void OpenFile(char* filename,vector<vector<byte>>* images,bool test)
+int OpenFile(char* filename,vector<vector<byte>>* images,bool test)
 {
     Header header; //A header with the file metadata
     ifstream file(filename, ios::binary); //open the file as binary
-
+    if(!file.is_open())
+    {
+        cout<<"Failed to open file: "<<filename<<endl
+            <<"Make sure the file exists!"<<endl;
+        return -1;
+    }
     file.read(reinterpret_cast<char*>(&header), sizeof(Header)); //get the header bytes
 
     header.magic_number = htonl(header.magic_number); //Convert the values to 32 bit
@@ -226,4 +231,84 @@ void OpenFile(char* filename,vector<vector<byte>>* images,bool test)
             break; //break the loop
     }
     file.close(); //close the file descriptor
+    return 0;
+}
+
+void ClearVectors(vector<double>& time,vector<double>& BruteForceTime,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<double>& TrueDistances)
+{
+    ExpansionPoints.clear();
+    TrueDistances.clear();
+    time.clear();
+    BruteForceTime.clear();
+}
+
+int CheckFileExistance(char* filename,bool QueryFile,vector<vector<byte>>& Vector)
+{
+    string input_file_string,input;
+    //If file is a query file
+    if(QueryFile)
+    {
+        //check if open fails,and require user to either exit or input a correct query file,and extract 10 firt items
+        while(OpenFile(filename,&Vector,QueryFile) == -1)
+        {
+            cout<<"Incorrect query file was given"<<endl
+                <<"Please give a new query file or type exit to exit: ";
+            cin>>input;
+            if(input == "exit" || input == "Exit")
+                return -1;
+            strcpy(filename,input.c_str());
+        }
+        return 0;
+    }
+    while(OpenFile(filename,&Vector,QueryFile) == -1)
+    {
+        cout<<"Please give a correct input file or type exit to exit: ";
+        cin>>input_file_string;
+        if(input_file_string == "exit" || input_file_string == "Exit")
+            return -1;
+        strcpy(filename,input_file_string.c_str());
+    }
+    return 0;
+}
+
+int GetNewFiles(char** query_file,char** output_file)
+{
+    string input,output;
+    cout<<"Execution for query file: "<<*query_file<<" finished!"<<endl
+        <<"If you would like to exit type exit,else type the query file you wish to input: ";
+    cin>>input;
+    if(input == "exit" || input == "Exit")
+         return -1;
+    strcpy(*query_file,input.c_str());
+    cout<<"If you would like to specify a new output file,type the name of the file"<<endl
+        <<"Else type continue (Note that the contents of the current file will be overwritten): ";
+    cin>>output;
+    if(!(output == "continue" || output == "Continue"))
+        strcpy(*output_file,output.c_str());
+    return 0;
+}
+
+void WriteToFile(ostream& MyFile,vector<double>& time,vector<double>& BruteForceTime,char* method,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<double>& TrueDistances,GraphPoint* QueryPoint)
+{
+    MyFile<<"Query: "<<QueryPoint->PointID<<endl; //Write Query Point ID
+    for(int i = 0;i < ExpansionPoints.size(); i++)//Write Input Point ID,Distance by method,Distance by BruteForce
+    {
+        MyFile<<"Nearest Neighbor-"<<i<<": "<<get<0>(ExpansionPoints[i])->PointID<<endl
+              <<"distanceApproximate: "<<get<1>(ExpansionPoints[i])<<endl
+              <<"distanceTrue: "<<TrueDistances[i]<<endl;
+    }
+    double AlgorithmAverageTime = 0.0,BruteForceAverageTime = 0.0;
+    if(time.size() != BruteForceTime.size()) //This should be true all the time but since we find the average value in the same loop below
+        cout<<"Incorrect Distances sizes!"<<endl; //we should check,but nothing changes
+    for(int i = 0;i < time.size();i++)
+    {
+        AlgorithmAverageTime += time[i];
+        BruteForceAverageTime += BruteForceTime[i];
+    }
+    double MAF = get<1>(ExpansionPoints[0]) / TrueDistances[0]; //MAF is the fraction of the approximate nearest neighbor / true nearest neighbor
+    AlgorithmAverageTime /= time.size(); //Compute average time
+    BruteForceAverageTime /= BruteForceTime.size();//for brute force as well as method
+    MyFile<<"tAverageApproximate: "<<AlgorithmAverageTime<<"ms"<<endl
+          <<"tAverageTrue: "<<BruteForceAverageTime<<"ms"<<endl
+          <<"MAF: "<<MAF<<endl;
 }
