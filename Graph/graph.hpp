@@ -11,11 +11,12 @@
 #include <cmath>
 #include <bits/stdc++.h>
 #include <chrono>
-#include "./LSH/lsh.hpp"
+#include "../LSH/lsh.hpp"
 
 using namespace std;
 
 bool NeighborsComparisonFunction(tuple<GraphPoint*,double>& A,tuple<GraphPoint*,double>& B);
+bool NeighborsComparisonFunciton(GraphPoint* A, GraphPoint* B);
 
 class Graph{
     private:
@@ -25,6 +26,6 @@ class Graph{
         ~Graph();
         vector<GraphPoint*> GetNeighbors(int PointID);
         int GetGraphSize();
-        int GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<byte>* QueryPoint);
+        int GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* QueryPoint);
         int GetNeighborsCount(int PointID);
 };

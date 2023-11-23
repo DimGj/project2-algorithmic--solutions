@@ -14,7 +14,4 @@ class HashFunction{
         HashFunction(){};
         HashFunction(vector<double>& randomVector,unsigned int window,double t);
         int Hash(vector<byte>* Vector);
-        int Hash(vector<double>& Vector);
-        char HashCube(vector<byte>& Vector);
-        char HashCube(vector<double>& Vector);
 };

@@ -20,9 +20,7 @@ class LSH{
         double GenerateT(unsigned int w);
         int GenerateR();
         void GenerateRandomVectors(int HashFunctions,int dimension,vector<vector<double>>* RandomVectors);
-        int WriteToFile(ofstream& MyFile,Point point,vector<double>& Distances,double BruteForce_duration,double LSH_duration);
 };
 
 /*Used when std::sort is called*/
 bool ComparisonFunctionByDistance(const GraphPoint* A,const GraphPoint* B);
-bool ComparisonFunctionByCluster(const Point& A,const Point& B);

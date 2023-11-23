@@ -67,9 +67,26 @@ bool ComparisonFunctionByDistance(const GraphPoint* A,const GraphPoint* B)
     return A->Distance < B->Distance;
 }
 
-bool ComparisonFunctionByCluster(const Point& A,const Point& B)
-{
-    return A.ClusterID < B.ClusterID;
+bool CandidatesComparisonFunciton(GraphPoint* A, GraphPoint* B) { return A->Distance < B->Distance ;}
+
+/*Basic brute force algorithm that compares all points to the query point and returns the N closest ones*/
+double BruteForce(vector<double>* Distances,vector<vector<byte>> Points,vector<byte> QueryPoint,int NearestNeighbors)
+{   
+    /*Count ms it takes to complete*/
+    auto start_time = chrono::high_resolution_clock().now();
+    /*For all points in the dataset*/
+    for(int i = 0;i < Points.size(); i++)
+        Distances->push_back(PNorm(&Points[i],&QueryPoint,2));
+    /*Sort the points*/
+    sort(Distances->begin(),Distances->end());
+
+    Distances->erase(Distances->begin() + NearestNeighbors,Distances->end());
+        
+    auto end_time = chrono::high_resolution_clock().now();
+
+    chrono::duration<double> duration = end_time - start_time;
+    /*Return the duration of the brute force search*/
+    return duration.count() * 1000;
 }
 
 

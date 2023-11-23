@@ -10,21 +10,35 @@ int main(int argc,char** argv)
     OpenFile(input_file,&Images,false);
     OpenFile(query_file,&Queries,true);
     Graph graph(GraphNearestNeighbors,NearestNeighbors,Images);
-    //Example run of getNeighbors
-    vector<GraphPoint*> neighbors = graph.GetNeighbors(0);
+    vector<tuple<GraphPoint*, double>> ExpansionPoints;
+    vector<double> TrueDistances;
+
+    vector<double> time;
+    vector<double> BruteForceTime;
+    GraphPoint QueryPoint;
+    ofstream MyFile(output_file);
+    MyFile<<method<<" results"<<endl; //Write method
     if(strcmp(method,"GNNS") == 0)
     {
         for(int i = 0;i < Queries.size(); i++)
-            GNNS(&Queries[i],&graph,Expansions,RandomRestarts,NearestNeighbors,5);
+        {
+            QueryPoint.PointID = i;
+            QueryPoint.Vector = &Queries[i];
+            time.push_back(GNNS(ExpansionPoints,&QueryPoint,&graph,Expansions,RandomRestarts,NearestNeighbors,5));
+            BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
+            WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
+            ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
+        }
     }
+    MyFile.close();
     delete method;
     return 0;
 }
 
-void GNNS(vector<byte>* QueryPoint,Graph* graph,int Expansions,int RandomRestarts,int NearestNeighbors,int GreedySteps)
+double GNNS(vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* QueryPoint,Graph* graph,int Expansions,int RandomRestarts,int NearestNeighbors,int GreedySteps)
 {
+    auto start_time = chrono::high_resolution_clock().now();
     int Y = 0;
-    vector<tuple<GraphPoint*, double>> ExpansionPoints;
     for(int i = 0;i < RandomRestarts; i++) //For a number of random restarts
     {
         Y = rand() % graph->GetGraphSize(); //get a uniformly distributed point in the graph
@@ -34,7 +48,6 @@ void GNNS(vector<byte>* QueryPoint,Graph* graph,int Expansions,int RandomRestart
             if(Y == -1) //if no neighbor was found ,restart with a new point
                 break;
         }
-
     }
     /*Dev,should never be true*/
     if(ExpansionPoints.size() <= 0)
@@ -42,14 +55,52 @@ void GNNS(vector<byte>* QueryPoint,Graph* graph,int Expansions,int RandomRestart
         cout<<"No points were found!"<<endl;
         exit(0);
     }
+
     sort(ExpansionPoints.begin(),ExpansionPoints.end(),NeighborsComparisonFunction); //Sort all the explored nodes
-    /*Dev,print them(Should write to file instead)*/
-    for(int i = 0;i < NearestNeighbors; i++)
-    {
-        cout<<"Image ID: "<<get<0>(ExpansionPoints[i])->PointID<<endl
-            <<"Distance: "<<get<1>(ExpansionPoints[i])<<endl;
-    }
+        
     /*Set IsExpanded to 0 for the next query point,since we are using pointers to the values of the GraphVector and not copied values*/
     for(int i = 0; i < ExpansionPoints.size(); i++)
         get<0>(ExpansionPoints[i])->IsExpanded = false;
+
+    if(NearestNeighbors < ExpansionPoints.size())
+        ExpansionPoints.erase(ExpansionPoints.begin() + NearestNeighbors,ExpansionPoints.end());
+
+    auto end_time = chrono::high_resolution_clock().now();
+    chrono::duration<double> duration = end_time - start_time;
+
+    return duration.count() * 1000;
+}
+
+void WriteToFile(ostream& MyFile,vector<double>& time,vector<double>& BruteForceTime,char* method,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<double>& TrueDistances,GraphPoint* QueryPoint)
+{
+    MyFile<<"Query: "<<QueryPoint->PointID<<endl; //
+    for(int i = 0;i < ExpansionPoints.size(); i++)
+    {
+        MyFile<<"Nearest Neighbor-"<<i<<": "<<get<0>(ExpansionPoints[i])->PointID<<endl
+              <<"distanceApproximate: "<<get<1>(ExpansionPoints[i])<<endl
+              <<"distanceTrue: "<<TrueDistances[i]<<endl;
+    }
+    double AlgorithmAverageTime = 0.0,BruteForceAverageTime = 0.0;
+    if(time.size() != BruteForceTime.size())
+        cout<<"Incorrect Distances sizes!"<<endl;
+    for(int i = 0;i < time.size();i++)
+    {
+        AlgorithmAverageTime += time[i];
+        BruteForceAverageTime += BruteForceTime[i];
+
+    }
+    double MAF = get<1>(ExpansionPoints[0]) / TrueDistances[0];
+    AlgorithmAverageTime /= time.size();
+    BruteForceAverageTime /= BruteForceTime.size();
+    MyFile<<"tAverageApproximate: "<<AlgorithmAverageTime<<"ms"<<endl
+          <<"tAverageTrue: "<<BruteForceAverageTime<<"ms"<<endl
+          <<"MAF: "<<MAF<<endl;
+}
+
+void ClearVectors(vector<double>& time,vector<double>& BruteForceTime,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<double>& TrueDistances)
+{
+    ExpansionPoints.clear();
+    TrueDistances.clear();
+    time.clear();
+    BruteForceTime.clear();
 }

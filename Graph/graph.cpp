@@ -47,7 +47,7 @@ vector<GraphPoint*>Graph::GetNeighbors(int PointID)
     return (*GraphVector)[PointID].Neighbors;
 }
 
-int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<byte>* QueryPoint)
+int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* QueryPoint)
 {
     vector<GraphPoint*> Neighbors = this->GetNeighbors(PointID);
     if(Neighbors.size() == 0) //If Datapoint has no neighbors,don't iterate the remaining greedy points(0 neighbors over and over)
@@ -66,8 +66,8 @@ int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoin
         if(!Neighbors[i]->IsExpanded) //If Datapoint hasn't been explored
         {
             //Add it to the vector
-            ExpansionPoints.push_back(tuple(Neighbors[i],PNorm(Neighbors[i]->Vector, QueryPoint,2)));
-            CurrentExpansions.push_back(tuple(Neighbors[i],PNorm(Neighbors[i]->Vector, QueryPoint,2)));
+            ExpansionPoints.push_back(tuple(Neighbors[i],PNorm(Neighbors[i]->Vector, QueryPoint->Vector,2)));
+            CurrentExpansions.push_back(tuple(Neighbors[i],PNorm(Neighbors[i]->Vector, QueryPoint->Vector,2)));
             Neighbors[i]->IsExpanded = true; //mark it as explored
         }
         else
