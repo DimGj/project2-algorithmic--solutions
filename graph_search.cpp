@@ -17,18 +17,34 @@ int main(int argc,char** argv)
     vector<double> BruteForceTime;
     GraphPoint QueryPoint;
     ofstream MyFile(output_file);
-    MyFile<<method<<" results"<<endl; //Write method
-    if(strcmp(method,"GNNS") == 0)
+    string input,output;
+    while(1)
     {
-        for(int i = 0;i < Queries.size(); i++)
+        MyFile<<method<<" results"<<endl; //Write method
+        if(strcmp(method,"GNNS") == 0)
         {
-            QueryPoint.PointID = i;
-            QueryPoint.Vector = &Queries[i];
-            time.push_back(GNNS(ExpansionPoints,&QueryPoint,&graph,Expansions,RandomRestarts,NearestNeighbors,5));
-            BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
-            WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
-            ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
+            for(int i = 0;i < Queries.size(); i++)
+            {
+                QueryPoint.PointID = i;
+                QueryPoint.Vector = &Queries[i];
+                time.push_back(GNNS(ExpansionPoints,&QueryPoint,&graph,Expansions,RandomRestarts,NearestNeighbors,5));
+                BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
+                WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
+                ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
+            }
         }
+        cout<<"Execution for query file: "<<query_file<<" finished!"<<endl
+            <<"If you would like to exit type exit,else type the query file you wish to input: ";
+        cin>>input;
+        if(input == "exit" || input == "Exit")
+            break;
+        strcpy(query_file,input.c_str());
+        cout<<"If you would like to specify a new output file,type the name of the file"<<endl
+            <<"Else type continue (Note that the contents of the current file will be overwritten): ";
+        cin>>output;
+        if(!(output == "continue" || output == "Continue"))
+            strcpy(output_file,output.c_str());
+        Queries.clear();
     }
     MyFile.close();
     delete method;
@@ -62,8 +78,8 @@ double GNNS(vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* Quer
     for(int i = 0; i < ExpansionPoints.size(); i++)
         get<0>(ExpansionPoints[i])->IsExpanded = false;
 
-    if(NearestNeighbors < ExpansionPoints.size())
-        ExpansionPoints.erase(ExpansionPoints.begin() + NearestNeighbors,ExpansionPoints.end());
+    if(NearestNeighbors < ExpansionPoints.size()) //if the neighbors we found are more than the nearest neighbors we want
+        ExpansionPoints.erase(ExpansionPoints.begin() + NearestNeighbors,ExpansionPoints.end()); //Delete the rest of them(vector is sorted by Distance to query point,so we delete after NearestNeighbors)
 
     auto end_time = chrono::high_resolution_clock().now();
     chrono::duration<double> duration = end_time - start_time;
@@ -73,25 +89,24 @@ double GNNS(vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* Quer
 
 void WriteToFile(ostream& MyFile,vector<double>& time,vector<double>& BruteForceTime,char* method,vector<tuple<GraphPoint*, double>>& ExpansionPoints,vector<double>& TrueDistances,GraphPoint* QueryPoint)
 {
-    MyFile<<"Query: "<<QueryPoint->PointID<<endl; //
-    for(int i = 0;i < ExpansionPoints.size(); i++)
+    MyFile<<"Query: "<<QueryPoint->PointID<<endl; //Write Query Point ID
+    for(int i = 0;i < ExpansionPoints.size(); i++)//Write Input Point ID,Distance by method,Distance by BruteForce
     {
         MyFile<<"Nearest Neighbor-"<<i<<": "<<get<0>(ExpansionPoints[i])->PointID<<endl
               <<"distanceApproximate: "<<get<1>(ExpansionPoints[i])<<endl
               <<"distanceTrue: "<<TrueDistances[i]<<endl;
     }
     double AlgorithmAverageTime = 0.0,BruteForceAverageTime = 0.0;
-    if(time.size() != BruteForceTime.size())
-        cout<<"Incorrect Distances sizes!"<<endl;
+    if(time.size() != BruteForceTime.size()) //This should be true all the time but since we find the average value in the same loop below
+        cout<<"Incorrect Distances sizes!"<<endl; //we should check,but nothing changes
     for(int i = 0;i < time.size();i++)
     {
         AlgorithmAverageTime += time[i];
         BruteForceAverageTime += BruteForceTime[i];
-
     }
-    double MAF = get<1>(ExpansionPoints[0]) / TrueDistances[0];
-    AlgorithmAverageTime /= time.size();
-    BruteForceAverageTime /= BruteForceTime.size();
+    double MAF = get<1>(ExpansionPoints[0]) / TrueDistances[0]; //MAF is the fraction of the approximate nearest neighbor / true nearest neighbor
+    AlgorithmAverageTime /= time.size(); //Compute average time
+    BruteForceAverageTime /= BruteForceTime.size();//for brute force as well as method
     MyFile<<"tAverageApproximate: "<<AlgorithmAverageTime<<"ms"<<endl
           <<"tAverageTrue: "<<BruteForceAverageTime<<"ms"<<endl
           <<"MAF: "<<MAF<<endl;

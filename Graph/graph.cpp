@@ -53,7 +53,7 @@ int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoin
     if(Neighbors.size() == 0) //If Datapoint has no neighbors,don't iterate the remaining greedy points(0 neighbors over and over)
         return -1;
 
-    vector<tuple<GraphPoint*, double>> CurrentExpansions;
+   // vector<tuple<GraphPoint*, double>> CurrentExpansions;
     int count = 0,IterationsCount = 0;
 
     if(Neighbors.size() > Expansions) //Find the min of both
@@ -61,13 +61,25 @@ int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoin
     else
         IterationsCount = Neighbors.size();
 
+    double MinDistance = numeric_limits<double>::max();
+    int MinDistancePointID = -1;
+    double L2Norm = 0.0;
     for(int i = 0;i < IterationsCount; i++)
     {
         if(!Neighbors[i]->IsExpanded) //If Datapoint hasn't been explored
         {
             //Add it to the vector
-            ExpansionPoints.push_back(tuple(Neighbors[i],PNorm(Neighbors[i]->Vector, QueryPoint->Vector,2)));
-            CurrentExpansions.push_back(tuple(Neighbors[i],PNorm(Neighbors[i]->Vector, QueryPoint->Vector,2)));
+            L2Norm = PNorm(Neighbors[i]->Vector, QueryPoint->Vector,2);
+            ExpansionPoints.push_back(tuple(Neighbors[i],L2Norm));
+            //CurrentExpansions.push_back(tuple(Neighbors[i],L2Norm));
+            //Find the min L2 Distance from the neighbors
+            if(L2Norm < MinDistance)
+            {
+                //store it as the new min distance
+                MinDistance = L2Norm;
+                //store the PointID of the graph
+                MinDistancePointID = Neighbors[i]->PointID;
+            }
             Neighbors[i]->IsExpanded = true; //mark it as explored
         }
         else
@@ -75,8 +87,8 @@ int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoin
     }
     if(count == IterationsCount) //If the number of explored neighbors is the number of expansions or the number of neighbors(no new datapoints will appear on the rest of the greedy iterations)
         return -1;  //break from the loop
-    sort(CurrentExpansions.begin(),CurrentExpansions.end(),NeighborsComparisonFunction); //else sort the current expansion array which has the neighbors for the current Point
-    return get<0>(CurrentExpansions[0])->PointID;   //retun the first since we sort by Distance
+    //sort(CurrentExpansions.begin(),CurrentExpansions.end(),NeighborsComparisonFunction); //else sort the current expansion array which has the neighbors for the current Point
+    return MinDistancePointID;   //return the Min Distance Point ID
 }
 
 int Graph::GetGraphSize(){ return GraphVector->size();}
