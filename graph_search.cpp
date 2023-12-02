@@ -30,7 +30,7 @@ int main(int argc,char** argv)
             {
                 QueryPoint.PointID = i;
                 QueryPoint.Vector = &Queries[i];
-                time.push_back(GNNS(ExpansionPoints,&QueryPoint,&graph,Expansions,RandomRestarts,NearestNeighbors,5));
+                time.push_back(GNNS(ExpansionPoints,&QueryPoint,&graph,Expansions,RandomRestarts,NearestNeighbors,10));
                 BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
                 WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
                 ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
