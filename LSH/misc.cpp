@@ -101,100 +101,71 @@ double BruteForce(vector<double>* Distances,vector<vector<byte>> Points,vector<b
 
 /*Gets all the arguments from the command line (doesnt matter the order they are used)*/
 void GetArgs(int argc,char** argv,char** input_file,char** query_file,char** output_file,int* GraphNearestNeighbors,int* Extensions,int* RandomRestarts,int* NearestNeighbors,int* TankCandidates,char** method)
-{   
-    /*Booleans to mark which value will be passed*/
-    bool input_bool = false,query_bool = false,GraphNeighbors_bool = false,
-         Extensions_bool = false,output_bool = false,NearestNeighbors_bool = false,RandomRestarts_bool = false,TankCandidates_bool = false,
-         method_bool = false;
-    
+{    
     if(argc < 2) //will need to change to 7 later
     {
         cout<<"Please enter arguments!"<<endl;
         exit(-1);
     }
 
-    *GraphNearestNeighbors = 50,*Extensions = 30,*RandomRestarts = 1,*NearestNeighbors = 1; //Default values are passed
+    *GraphNearestNeighbors = 50,*Extensions = 30,*RandomRestarts = 1,*NearestNeighbors = 1,*TankCandidates = 20;; //Default values are passed
                                  //so even if user doesnt input them,these will be use
-    *TankCandidates = -1;
 
     for(int i=0;i < argc; i++)
-    {
-        if(input_bool) //If the corresponding bool is true
+    {   
+        if(strcmp(argv[i],"-d") == 0) //this checks if the argv arg is the parameter before the actual value we want
         {
-            *input_file = argv[i]; //Get the appropriate value from the argv array
-            input_bool = false; //mark the boolean false so it is excluded next time
+            *input_file = argv[i + 1];
+            i++;
         }
-        else if(query_bool)
+        else if(strcmp(argv[i],"-q") == 0)
         {
-            *query_file = argv[i];
-            query_bool = false;
+            *query_file = argv[i + 1];
+            i++;
         }
-        else if(GraphNeighbors_bool)
+        else if(strcmp(argv[i],"-k") == 0)
         {
-            *GraphNearestNeighbors = atoi(argv[i]);
-            GraphNeighbors_bool = false;
+            *GraphNearestNeighbors = atoi(argv[i + 1]);
+            i++;
         }
-        else if(Extensions_bool)
+        else if(strcmp(argv[i],"-E") == 0)
         {
-            *Extensions = atoi(argv[i]);
-            Extensions_bool = false;
+            *Extensions = atoi(argv[i + 1]);
+            i++;
         }
-        else if(output_bool)
+        else if(strcmp(argv[i],"-o") == 0)
         {
-            *output_file = argv[i];
-            output_bool = false;
+            *output_file = argv[i + 1];
+            i++;
         }
-        else if(NearestNeighbors_bool)
+        else if(strcmp(argv[i],"-R") == 0)
         {
-            *NearestNeighbors = atoi(argv[i]);
-            NearestNeighbors_bool = false;
+            *RandomRestarts = atoi(argv[i + 1]);
+            i++;
         }
-        else if(RandomRestarts_bool)
+        else if(strcmp(argv[i],"-N") == 0)
         {
-            *RandomRestarts = atoi(argv[i]);
-            RandomRestarts_bool = false;   
+            *NearestNeighbors = atoi(argv[i + 1]);
+            i++;
         }
-        else if(TankCandidates_bool)
+        else if(strcmp(argv[i],"-l") == 0)
         {
-            *TankCandidates= atoi(argv[i]);
-            TankCandidates_bool = false;
+            *TankCandidates = atoi(argv[i + 1]);
+            i++;
         }
-        else if(method_bool)
+        else if(strcmp(argv[i],"-m") == 0)
         {
-            if(atoi(argv[i]) == 1)
+            if(atoi(argv[i + 1]) == 1)
                 strcpy(*method,"GNNS");
-            else if(atoi(argv[i]) == 2)
+            else if(atoi(argv[i + 1]) == 2)
                 strcpy(*method,"MRNG");
             else
             {
                 cout<<"Invalid method!"<<endl;
                 exit(-1);
             }
-            method_bool = false;
+
         }
-        else if(strcmp(argv[i],"-d") == 0) //this checks if the argv arg is the parameter before the actual value we want
-            input_bool = true; //if so,mark the appropriate boolean as true so on the next iteration we access the correct value
-        else if(strcmp(argv[i],"-q") == 0)
-            query_bool = true;
-        else if(strcmp(argv[i],"-k") == 0)
-            GraphNeighbors_bool = true;
-        else if(strcmp(argv[i],"-E") == 0)
-            Extensions_bool = true; 
-        else if(strcmp(argv[i],"-o") == 0)
-            output_bool = true;  
-        else if(strcmp(argv[i],"-R") == 0)
-            RandomRestarts_bool = true;  
-        else if(strcmp(argv[i],"-N") == 0)
-            NearestNeighbors_bool = true;
-        else if(strcmp(argv[i],"-l") == 0)
-            TankCandidates_bool = true;
-        else if(strcmp(argv[i],"-m") == 0)
-            method_bool = true;
-    }
-    if(strcmp(*method,"MRNG") == 0 && *TankCandidates == -1)
-    {
-        cout<<"If MRNG is selected,-l parameter must be passed!"<<endl;
-        exit(-1);
     }
 }
 
