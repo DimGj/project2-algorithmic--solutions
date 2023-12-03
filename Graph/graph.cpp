@@ -5,7 +5,6 @@ Graph::Graph(int GraphNearestNeighbors,int NearestNeighbors,vector<vector<byte>>
     int HashTables = 4,HashFunctions = 5;
     LSH Lsh(HashTables,HashFunctions,10000,NearestNeighbors,Images.size(),GraphNearestNeighbors);
     GraphPoint NewPoint;
-    GraphPoint* Point;
     GraphVector = new vector<GraphPoint>;
     GraphVector->resize(Images.size());
     for(int i = 0;i < Images.size(); i++)
@@ -71,7 +70,7 @@ int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoin
             //Add it to the vector
             L2Norm = PNorm(Neighbors[i]->Vector, QueryPoint->Vector,2);
             ExpansionPoints.push_back(tuple(Neighbors[i],L2Norm));
-            //CurrentExpansions.push_back(tuple(Neighbors[i],L2Norm));
+            //CurrentExpansions.push_back(tuple(Neighbors[i],L2Norm))
             //Find the min L2 Distance from the neighbors
             if(L2Norm < MinDistance)
             {

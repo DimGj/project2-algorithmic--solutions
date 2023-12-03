@@ -38,6 +38,20 @@ int main(int argc,char** argv)
             if(GetNewFiles(&query_file,&output_file) == -1)
                 return 0;
         }
+        else if(strcmp(method,"MRNG") == 0)
+        {
+            for(int i = 0;i < Queries.size(); i++)
+            {
+                QueryPoint.PointID = i;
+                QueryPoint.Vector = &Queries[i];
+                time.push_back(MRNG(ExpansionPoints,&QueryPoint,&graph,Expansions,RandomRestarts,NearestNeighbors,5));
+                BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
+                WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
+                ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
+            }
+            if(GetNewFiles(&query_file,&output_file) == -1)
+                return 0;
+        }
         Queries.clear();
         if(CheckFileExistance(query_file,true,Queries) == -1)
             return 0;
