@@ -5,7 +5,6 @@ Graph::Graph(int GraphNearestNeighbors,int NearestNeighbors,vector<vector<byte>>
     int HashTables = 4,HashFunctions = 5;
     LSH Lsh(HashTables,HashFunctions,10000,NearestNeighbors,Images.size(),GraphNearestNeighbors);
     GraphPoint NewPoint;
-    GraphPoint* Point;
     GraphVector = new vector<GraphPoint>;
     GraphVector->resize(Images.size());
     for(int i = 0;i < Images.size(); i++)
@@ -57,39 +56,6 @@ Graph::Graph(vector<vector<byte>>& Images)
     }
 }
 
-
-Graph::Graph(int GraphNearestNeighbors,int NearestNeighbors,vector<vector<byte>>& Images)
-{
-    int HashTables = 4,HashFunctions = 5;
-    LSH Lsh(HashTables,HashFunctions,10000,NearestNeighbors,Images.size(),GraphNearestNeighbors);
-    GraphPoint NewPoint;
-    GraphPoint* Point;
-    GraphVector = new vector<GraphPoint>;
-    GraphVector->resize(Images.size());
-    for(int i = 0;i < Images.size(); i++)
-    {
-        /*Assign Values to a GraphPoint variable*/
-        NewPoint.PointID = i; //This is the primary key of the image
-        NewPoint.Vector = &Images[i]; //Vector of the image
-
-        (*GraphVector)[i] = NewPoint;
-
-        Lsh.Hash((*GraphVector)[i],false); //Hash the Pointer
-    }
-    for(int i = 0;i < GraphVector->size(); i++)
-        Lsh.Hash((*GraphVector)[i],true);
-    
-    /*Dev,should delete after(checks if all points exist in graph)*/
-    for(int i = 0;i < GraphVector->size(); i++)
-    {
-        if(this->GetNeighborsCount(i) <= 0)
-        {
-            cout<<"Failed to initialize Graph Properly!"<<endl;
-            exit(-1);
-        }
-    }
-}
-
 Graph::~Graph()
 {
     delete GraphVector;
@@ -129,7 +95,7 @@ int Graph::GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoin
             //Add it to the vector
             L2Norm = PNorm(Neighbors[i]->Vector, QueryPoint->Vector,2);
             ExpansionPoints.push_back(tuple(Neighbors[i],L2Norm));
-            //CurrentExpansions.push_back(tuple(Neighbors[i],L2Norm));
+            //CurrentExpansions.push_back(tuple(Neighbors[i],L2Norm))
             //Find the min L2 Distance from the neighbors
             if(L2Norm < MinDistance)
             {
@@ -187,18 +153,6 @@ vector<GraphPoint*> Graph::GetSortedPointsByDistance(const GraphPoint& Point) {
     }
 
     return sortedPoints;
-}
-
-void Graph::PrintGraph()
-{
-    for (const auto& node : *GraphVector) {
-        cout << "Node ID: " << node.PointID << ", Distance: " << node.Distance << ", IsExpanded: " << node.IsExpanded << endl;
-        cout << "Neighbors: ";
-        for (const auto& neighbor : node.Neighbors) {
-            cout << neighbor->PointID << " ";
-        }
-        cout << endl << endl;
-    }
 }
 
 bool NeighborsComparisonFunction(tuple<GraphPoint*,double>& A,tuple<GraphPoint*,double>& B) { return get<1>(A) < get<1>(B) ;}

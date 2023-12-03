@@ -57,6 +57,20 @@ int main(int argc,char** argv)
             if(GetNewFiles(&query_file,&output_file) == -1)
                 return 0;
         }
+        else if(strcmp(method,"MRNG") == 0)
+        {
+            for(int i = 0;i < Queries.size(); i++)
+            {
+                QueryPoint.PointID = i;
+                QueryPoint.Vector = &Queries[i];
+                time.push_back(SearchOnGraph(&QueryPoint,graph,NearestNeighbors,TankCandidates));
+                BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
+                WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
+                ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
+            }
+            if(GetNewFiles(&query_file,&output_file) == -1)
+                return 0;
+        }
         Queries.clear();
         if(CheckFileExistance(query_file,true,Queries) == -1)
             return 0;
@@ -102,7 +116,7 @@ double GNNS(vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* Quer
     return duration.count() * 1000;
 }
 
-double MRNG(Graph* graph)
+void MRNG(Graph* graph)
 {   
     int GraphSize = graph->GetGraphSize();
     vector<GraphPoint>& graphVector = graph->GetGraphVector();

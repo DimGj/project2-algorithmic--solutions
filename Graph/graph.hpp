@@ -31,5 +31,4 @@ class Graph{
         int GetClosestNeighbors(int PointID,int Expansions,vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* QueryPoint);
         int GetNeighborsCount(int PointID);
         vector<GraphPoint*> Graph::GetSortedPointsByDistance(const GraphPoint& queryPoint);
-        void PrintGraph();
 };
