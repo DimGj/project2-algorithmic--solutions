@@ -17,7 +17,7 @@ int main(int argc,char** argv)
     //Open files and check if they exist
     if(CheckFileExistance(input_file,false,Images) == -1 || CheckFileExistance(query_file,true,Queries) == -1)
         return 0;
-    //initialize graph for GNNS
+    //initialize graph depending on method
     Graph* graph;
     if(strcmp(method,"GNNS") == 0)
         graph = new Graph(GraphNearestNeighbors,NearestNeighbors,Images);
@@ -44,7 +44,6 @@ int main(int argc,char** argv)
         }
         else if(strcmp(method,"MRNG") == 0)
         {
-            if(NearestNeighbors > TankCandidates)
             for(int i = 0;i < Queries.size(); i++)
             {
                 QueryPoint.PointID = i;
@@ -109,7 +108,6 @@ double SearchOnGraph(vector<tuple<GraphPoint*,double>>& PoolOfCandidates,GraphPo
     int StartPoint = rand() % graph->GetGraphSize(); //get a uniformly distributed point in the graph
     bool flag;
     vector<GraphPoint>& graphVector = graph->GetGraphVector();
-    vector<GraphPoint*> PoolOfCandidates; // Candidate set
     set<int> checkedNodes; // To keep track of checked nodes
     PoolOfCandidates.push_back(tuple(&graphVector[StartPoint],PNorm(graphVector[StartPoint].Vector,QueryPoint->Vector,2))); // Initialize PoolOfCandidates with the starting point
 
