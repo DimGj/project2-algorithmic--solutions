@@ -16,7 +16,6 @@
 using namespace std;
 
 bool NeighborsComparisonFunction(tuple<GraphPoint*,double>& A,tuple<GraphPoint*,double>& B);
-bool NeighborsComparisonFunciton(GraphPoint* A, GraphPoint* B);
 
 class Graph{
     private:

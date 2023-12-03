@@ -49,7 +49,7 @@ int main(int argc,char** argv)
             {
                 QueryPoint.PointID = i;
                 QueryPoint.Vector = &Queries[i];
-                time.push_back(SearchOnGraph(&QueryPoint,graph,NearestNeighbors,TankCandidates));
+                time.push_back(SearchOnGraph(ExpansionPoints,&QueryPoint,graph,NearestNeighbors,TankCandidates));
                 BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
                 WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
                 ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
@@ -103,52 +103,55 @@ double GNNS(vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* Quer
 }
 
 
-double SearchOnGraph(GraphPoint* QueryPoint,Graph* graph,int NearestNeighbors,int TankCandidates)
+double SearchOnGraph(vector<tuple<GraphPoint*,double>>& PoolOfCandidates,GraphPoint* QueryPoint,Graph* graph,int NearestNeighbors,int TankCandidates)
 {
     auto start_time = chrono::high_resolution_clock().now();
     int StartPoint = rand() % graph->GetGraphSize(); //get a uniformly distributed point in the graph
+    bool flag;
     vector<GraphPoint>& graphVector = graph->GetGraphVector();
     vector<GraphPoint*> PoolOfCandidates; // Candidate set
     set<int> checkedNodes; // To keep track of checked nodes
-    PoolOfCandidates.push_back(&graphVector[StartPoint]); // Initialize PoolOfCandidates with the starting point
+    PoolOfCandidates.push_back(tuple(&graphVector[StartPoint],PNorm(graphVector[StartPoint].Vector,QueryPoint->Vector,2))); // Initialize PoolOfCandidates with the starting point
+
     int i=0; // i is the index for the first unchecked node in PoolOfCandidates
 
     while (i < TankCandidates)
     {
+        flag = true;
         // Find the first unchecked node in PoolOfCandidates
         for (int j = 0; j < PoolOfCandidates.size(); ++j)
         {
-            if (checkedNodes.find(PoolOfCandidates[j]->PointID) == checkedNodes.end())
+            if (checkedNodes.find(get<0>(PoolOfCandidates[j])->PointID) == checkedNodes.end())
             {
                 i = j;
+                flag = false;
                 break;
             }
         }
-        if (i == PoolOfCandidates.size())
+
+        if(flag)
             break; // No unchecked nodes remaining
 
-        const GraphPoint* p = PoolOfCandidates[i];
+        const GraphPoint* p = get<0>(PoolOfCandidates[i]);
         checkedNodes.insert(p->PointID);    // Mark p as checked
 
          // Explore neighbors of p
         for (GraphPoint* neighbor : graph->GetNeighbors(p->PointID))
         {
             if (checkedNodes.find(neighbor->PointID) == checkedNodes.end())
-                PoolOfCandidates.push_back(neighbor);
+                PoolOfCandidates.push_back(tuple(neighbor,PNorm(neighbor->Vector,QueryPoint->Vector,2)));
         }
 
         // Sort PoolOfCandidates in ascending order of distance to the query point
-        sort(PoolOfCandidates.begin(), PoolOfCandidates.end(), [&QueryPoint](const GraphPoint* a, const GraphPoint* b) {
-            return PNorm(a->Vector, QueryPoint->Vector, 2) < PNorm(b->Vector, QueryPoint->Vector, 2);
-        });
+        sort(PoolOfCandidates.begin(), PoolOfCandidates.end(),NeighborsComparisonFunction);
 
         // Resize PoolOfCandidates to NearestNeighbors, if needed
         if (PoolOfCandidates.size() > TankCandidates)
             PoolOfCandidates.resize(TankCandidates);
     }
     //PoolOfCandidates contains the NearestNeighbors candidates sorted by distance to the query point
+    PoolOfCandidates.erase(PoolOfCandidates.begin() + NearestNeighbors,PoolOfCandidates.end());
 
-    //return vector<GraphPoint*>(PoolOfCandidates.begin(), PoolOfCandidates.begin() + NearestNeighbors);
     auto end_time = chrono::high_resolution_clock().now();
     chrono::duration<double> duration = end_time - start_time;
 
