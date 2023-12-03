@@ -32,6 +32,64 @@ Graph::Graph(int GraphNearestNeighbors,int NearestNeighbors,vector<vector<byte>>
     }
 }
 
+Graph::Graph(vector<vector<byte>>& Images)
+{
+    GraphPoint NewPoint;
+    GraphPoint* Point;
+    GraphVector = new vector<GraphPoint>;
+    GraphVector->resize(Images.size());
+    for(int i = 0;i < Images.size(); i++)
+    {
+        /*Assign Values to a GraphPoint variable*/
+        NewPoint.PointID = i; //This is the primary key of the image
+        NewPoint.Vector = &Images[i]; //Vector of the image
+        (*GraphVector)[i] = NewPoint;
+    }
+    
+    /*Dev,should delete after(checks if all points exist in graph)*/
+    for(int i = 0;i < GraphVector->size(); i++)
+    {
+        if(this->GetNeighborsCount(i) <= 0)
+        {
+            cout<<"Failed to initialize Graph Properly!"<<endl;
+            exit(-1);
+        }
+    }
+}
+
+
+Graph::Graph(int GraphNearestNeighbors,int NearestNeighbors,vector<vector<byte>>& Images)
+{
+    int HashTables = 4,HashFunctions = 5;
+    LSH Lsh(HashTables,HashFunctions,10000,NearestNeighbors,Images.size(),GraphNearestNeighbors);
+    GraphPoint NewPoint;
+    GraphPoint* Point;
+    GraphVector = new vector<GraphPoint>;
+    GraphVector->resize(Images.size());
+    for(int i = 0;i < Images.size(); i++)
+    {
+        /*Assign Values to a GraphPoint variable*/
+        NewPoint.PointID = i; //This is the primary key of the image
+        NewPoint.Vector = &Images[i]; //Vector of the image
+
+        (*GraphVector)[i] = NewPoint;
+
+        Lsh.Hash((*GraphVector)[i],false); //Hash the Pointer
+    }
+    for(int i = 0;i < GraphVector->size(); i++)
+        Lsh.Hash((*GraphVector)[i],true);
+    
+    /*Dev,should delete after(checks if all points exist in graph)*/
+    for(int i = 0;i < GraphVector->size(); i++)
+    {
+        if(this->GetNeighborsCount(i) <= 0)
+        {
+            cout<<"Failed to initialize Graph Properly!"<<endl;
+            exit(-1);
+        }
+    }
+}
+
 Graph::~Graph()
 {
     delete GraphVector;
@@ -101,6 +159,46 @@ int Graph::GetNeighborsCount(int PointID)
         exit(-1);
     }
     return (*GraphVector)[PointID].Neighbors.size();
+}
+
+vector<GraphPoint>& Graph::GetGraphVector() {
+        return *GraphVector;
+}
+
+vector<GraphPoint*> Graph::GetSortedPointsByDistance(const GraphPoint& Point) {
+    // Calculate distances and create a vector of tuples
+    vector<tuple<GraphPoint*, double>> distancesAndPoints;
+    for (GraphPoint& node : *GraphVector) {
+        double distance = PNorm(Point.Vector, node.Vector, 2);  
+        distancesAndPoints.push_back(tuple(&node, distance));
+    }
+
+    // Sort the vector of tuples based on distances
+    sort(distancesAndPoints.begin(), distancesAndPoints.end(), [](const auto& a, const auto& b) { return get<1>(a) < get<1>(b); }); //TODO change comparison functions
+
+    // Extract the sorted GraphPoint* objects into a new vector
+    vector<GraphPoint*> sortedPoints;
+    
+    for (const auto& tuple : distancesAndPoints) 
+    {
+        GraphPoint* currentNode = get<0>(tuple);
+        if (currentNode != &Point)
+            sortedPoints.push_back(currentNode);
+    }
+
+    return sortedPoints;
+}
+
+void Graph::PrintGraph()
+{
+    for (const auto& node : *GraphVector) {
+        cout << "Node ID: " << node.PointID << ", Distance: " << node.Distance << ", IsExpanded: " << node.IsExpanded << endl;
+        cout << "Neighbors: ";
+        for (const auto& neighbor : node.Neighbors) {
+            cout << neighbor->PointID << " ";
+        }
+        cout << endl << endl;
+    }
 }
 
 bool NeighborsComparisonFunction(tuple<GraphPoint*,double>& A,tuple<GraphPoint*,double>& B) { return get<1>(A) < get<1>(B) ;}
