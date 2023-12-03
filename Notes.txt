@@ -1,3 +1,0 @@
-1)Implement MRNG
-2)Compare performance of HyperCube,LSH with MRNG and GNNS
-3)Tune GNNS
