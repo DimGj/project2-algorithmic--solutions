@@ -141,7 +141,7 @@ vector<GraphPoint*> Graph::GetSortedPointsByDistance(const GraphPoint& Point) {
     }
 
     // Sort the vector of tuples based on distances
-    sort(distancesAndPoints.begin(), distancesAndPoints.end(), [](const auto& a, const auto& b) { return get<1>(a) < get<1>(b); }); //TODO change comparison functions
+    sort(distancesAndPoints.begin(), distancesAndPoints.end(),NeighborsComparisonFunction); //TODO change comparison functions
 
     // Extract the sorted GraphPoint* objects into a new vector
     vector<GraphPoint*> sortedPoints;
