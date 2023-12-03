@@ -139,8 +139,10 @@ vector<GraphPoint*> Graph::GetSortedPointsByDistance(const GraphPoint& Point) {
         double distance = PNorm(Point.Vector, node.Vector, 2);  
         distancesAndPoints.push_back(tuple(&node, distance));
     }
-    // Sort the vector of tuples based on distances from the given point
-    sort(distancesAndPoints.begin(), distancesAndPoints.end(), [](const auto& a, const auto& b) { return get<1>(a) < get<1>(b); }); //typical comparison function used also on GNNS too(but with const)
+
+    // Sort the vector of tuples based on distances
+    sort(distancesAndPoints.begin(), distancesAndPoints.end(),NeighborsComparisonFunction); //TODO change comparison functions
+
     // Extract the sorted GraphPoint* objects into a new vector
     vector<GraphPoint*> sortedPoints;
     for (const auto& tuple : distancesAndPoints) 
