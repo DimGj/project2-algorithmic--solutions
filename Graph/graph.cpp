@@ -139,16 +139,13 @@ vector<GraphPoint*> Graph::GetSortedPointsByDistance(const GraphPoint& Point) {
         double distance = PNorm(Point.Vector, node.Vector, 2);  
         distancesAndPoints.push_back(tuple(&node, distance));
     }
-
-    // Sort the vector of tuples based on distances
-    sort(distancesAndPoints.begin(), distancesAndPoints.end(), [](const auto& a, const auto& b) { return get<1>(a) < get<1>(b); }); //TODO change comparison functions
-
+    // Sort the vector of tuples based on distances from the given point
+    sort(distancesAndPoints.begin(), distancesAndPoints.end(), [](const auto& a, const auto& b) { return get<1>(a) < get<1>(b); }); //typical comparison function used also on GNNS too(but with const)
     // Extract the sorted GraphPoint* objects into a new vector
     vector<GraphPoint*> sortedPoints;
-    
     for (const auto& tuple : distancesAndPoints) 
     {
-        GraphPoint* currentNode = get<0>(tuple);
+        GraphPoint* currentNode = get<0>(tuple);        //Dont include the point itself on the sorted vector!!
         if (currentNode != &Point)
             sortedPoints.push_back(currentNode);
     }
@@ -162,15 +159,15 @@ void Graph::MRNG()
     vector<GraphPoint>& graphVector = this->GetGraphVector();
     bool flag = true;
 
-    for (int i = 0; i < GraphSize; i++) 
+    for (int i = 0; i < GraphSize; i++)     //iterate through each node to find construct its neighbors
     {
-        GraphPoint& p = graphVector[i];
-        vector<GraphPoint*> SortedByCurrentPointDist = this->GetSortedPointsByDistance(p);
+        GraphPoint& p = graphVector[i];     
+        vector<GraphPoint*> SortedByCurrentPointDist = this->GetSortedPointsByDistance(p);  //Sort in ascending order of distances of rest nodes to p node
 
-        if (!SortedByCurrentPointDist.empty()) {
-            p.Neighbors.push_back(SortedByCurrentPointDist.front());    //Lp
-            // Remove the first element from SortedByCurrentPointDist
-            SortedByCurrentPointDist.erase(SortedByCurrentPointDist.begin());  //Rp
+        if (!SortedByCurrentPointDist.empty()) 
+        {
+            p.Neighbors.push_back(SortedByCurrentPointDist.front());    //Lp initilization (the closest node to each p will always be neighbor)
+            SortedByCurrentPointDist.erase(SortedByCurrentPointDist.begin());  //Rp initialization (S - p)
         }
 
         vector<GraphPoint*> NeighborsCandidates = SortedByCurrentPointDist;     //Rp-Lp
@@ -179,12 +176,12 @@ void Graph::MRNG()
             auto it = find(NeighborsCandidates.begin(), NeighborsCandidates.end(), neighbor);
             if (it != NeighborsCandidates.end())
                 NeighborsCandidates.erase(it);
-        }
+        }   //erase all the Lp nodes that exists in Rp , to get all the neighbor candidates for p node
 
-        for (int k = 0; k < NeighborsCandidates.size(); k++) 
+        for (int k = 0; k < NeighborsCandidates.size(); k++)  
         {   
             flag = true;
-            const GraphPoint& r = *(NeighborsCandidates[k]);
+            const GraphPoint& r = *(NeighborsCandidates[k]); //iterate each r to examine if it's an actual neighbor 
             for (int j = 0; j < p.Neighbors.size(); j++) 
             {
                 const GraphPoint& t = *(p.Neighbors[j]);
@@ -192,12 +189,13 @@ void Graph::MRNG()
                 double pt = PNorm(t.Vector, p.Vector,2);
                 double rt = PNorm(r.Vector, t.Vector,2);
 
-                if (pr > pt && pr > rt) {
+                if (pr > pt && pr > rt)     //if it is the longest edge in the triangle break from the nested loop , no possible neighbor
+                {
                     flag = false;
                     break;
                 }
             }
-            if(flag)
+            if(flag)    //if it was not the longest trinagle for every trinalge for every already neighbor (t) add it on the graph as a new neighbor of 
                 p.Neighbors.push_back(NeighborsCandidates[k]);  //add to Lp (as Neighbor)
         }
     }

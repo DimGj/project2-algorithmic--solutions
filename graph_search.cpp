@@ -105,15 +105,15 @@ double GNNS(vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* Quer
 double SearchOnGraph(vector<tuple<GraphPoint*,double>>& PoolOfCandidates,GraphPoint* QueryPoint,Graph* graph,int NearestNeighbors,int TankCandidates)
 {
     auto start_time = chrono::high_resolution_clock().now();
-    int StartPoint = rand() % graph->GetGraphSize(); //get a uniformly distributed point in the graph
+    int StartPoint = rand() % graph->GetGraphSize(); //get a uniformly distributed point in the graph as starting point
     bool flag;
     vector<GraphPoint>& graphVector = graph->GetGraphVector();
-    set<int> checkedNodes; // To keep track of checked nodes
+    set<int> checkedNodes; //To keep track of checked nodes
     PoolOfCandidates.push_back(tuple(&graphVector[StartPoint],PNorm(graphVector[StartPoint].Vector,QueryPoint->Vector,2))); // Initialize PoolOfCandidates with the starting point
 
     int i=0; // i is the index for the first unchecked node in PoolOfCandidates
 
-    while (i < TankCandidates)
+    while (i < TankCandidates) //always number of neighbors smaller of sie of the tank
     {
         flag = true;
         // Find the first unchecked node in PoolOfCandidates
@@ -127,13 +127,13 @@ double SearchOnGraph(vector<tuple<GraphPoint*,double>>& PoolOfCandidates,GraphPo
             }
         }
 
-        if(flag)
-            break; // No unchecked nodes remaining
+        if(flag)    //if no unchecked nodes remaining , end the algorithm
+            break;
 
         const GraphPoint* p = get<0>(PoolOfCandidates[i]);
-        checkedNodes.insert(p->PointID);    // Mark p as checked
+        checkedNodes.insert(p->PointID);    //Mark p as checked
 
-         // Explore neighbors of p
+        //Get all th neighbors of p and add them to the poolOfCandidates and their distance to the query point
         for (GraphPoint* neighbor : graph->GetNeighbors(p->PointID))
         {
             if (checkedNodes.find(neighbor->PointID) == checkedNodes.end())
