@@ -108,7 +108,7 @@ void GetArgs(int argc,char** argv,char** input_file,char** query_file,char** out
         exit(-1);
     }
 
-    *GraphNearestNeighbors = 50,*Extensions = 30,*RandomRestarts = 1,*NearestNeighbors = 1,*TankCandidates = 20;; //Default values are passed
+    *GraphNearestNeighbors = 50,*Extensions = 30,*RandomRestarts = 1,*NearestNeighbors = 1,*TankCandidates = 20; //Default values are passed
                                  //so even if user doesnt input them,these will be use
 
     for(int i=0;i < argc; i++)

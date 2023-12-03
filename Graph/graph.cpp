@@ -44,6 +44,7 @@ Graph::Graph(vector<vector<byte>>& Images)
         NewPoint.Vector = &Images[i]; //Vector of the image
         (*GraphVector)[i] = NewPoint;
     }
+    this->MRNG();
     
     /*Dev,should delete after(checks if all points exist in graph)*/
     for(int i = 0;i < GraphVector->size(); i++)
@@ -153,6 +154,53 @@ vector<GraphPoint*> Graph::GetSortedPointsByDistance(const GraphPoint& Point) {
     }
 
     return sortedPoints;
+}
+
+void Graph::MRNG()
+{
+    int GraphSize = this->GetGraphSize();
+    vector<GraphPoint>& graphVector = this->GetGraphVector();
+    bool flag = true;
+
+    for (int i = 0; i < GraphSize; i++) 
+    {
+        GraphPoint& p = graphVector[i];
+        vector<GraphPoint*> SortedByCurrentPointDist = this->GetSortedPointsByDistance(p);
+
+        if (!SortedByCurrentPointDist.empty()) {
+            p.Neighbors.push_back(SortedByCurrentPointDist.front());    //Lp
+            // Remove the first element from SortedByCurrentPointDist
+            SortedByCurrentPointDist.erase(SortedByCurrentPointDist.begin());  //Rp
+        }
+
+        vector<GraphPoint*> NeighborsCandidates = SortedByCurrentPointDist;     //Rp-Lp
+        for (const GraphPoint* neighbor : p.Neighbors)
+        {
+            auto it = find(NeighborsCandidates.begin(), NeighborsCandidates.end(), neighbor);
+            if (it != NeighborsCandidates.end())
+                NeighborsCandidates.erase(it);
+        }
+
+        for (int k = 0; k < NeighborsCandidates.size(); k++) 
+        {   
+            flag = true;
+            const GraphPoint& r = *(NeighborsCandidates[k]);
+            for (int j = 0; j < p.Neighbors.size(); j++) 
+            {
+                const GraphPoint& t = *(p.Neighbors[j]);
+                double pr = PNorm(r.Vector, p.Vector,2);
+                double pt = PNorm(t.Vector, p.Vector,2);
+                double rt = PNorm(r.Vector, t.Vector,2);
+
+                if (pr > pt && pr > rt) {
+                    flag = false;
+                    break;
+                }
+            }
+            if(flag)
+                p.Neighbors.push_back(NeighborsCandidates[k]);  //add to Lp (as Neighbor)
+        }
+    }
 }
 
 bool NeighborsComparisonFunction(tuple<GraphPoint*,double>& A,tuple<GraphPoint*,double>& B) { return get<1>(A) < get<1>(B) ;}

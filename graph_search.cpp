@@ -57,20 +57,6 @@ int main(int argc,char** argv)
             if(GetNewFiles(&query_file,&output_file) == -1)
                 return 0;
         }
-        else if(strcmp(method,"MRNG") == 0)
-        {
-            for(int i = 0;i < Queries.size(); i++)
-            {
-                QueryPoint.PointID = i;
-                QueryPoint.Vector = &Queries[i];
-                time.push_back(SearchOnGraph(&QueryPoint,graph,NearestNeighbors,TankCandidates));
-                BruteForceTime.push_back(BruteForce(&TrueDistances,Images,*QueryPoint.Vector,NearestNeighbors));
-                WriteToFile(MyFile,time,BruteForceTime,method,ExpansionPoints,TrueDistances,&QueryPoint);
-                ClearVectors(time,BruteForceTime,ExpansionPoints,TrueDistances);
-            }
-            if(GetNewFiles(&query_file,&output_file) == -1)
-                return 0;
-        }
         Queries.clear();
         if(CheckFileExistance(query_file,true,Queries) == -1)
             return 0;
@@ -116,57 +102,10 @@ double GNNS(vector<tuple<GraphPoint*, double>>& ExpansionPoints,GraphPoint* Quer
     return duration.count() * 1000;
 }
 
-void MRNG(Graph* graph)
-{   
-    int GraphSize = graph->GetGraphSize();
-    vector<GraphPoint>& graphVector = graph->GetGraphVector();
-    bool flag = true;
-
-    for (int i = 0; i < GraphSize; i++) 
-    {
-        GraphPoint& p = graphVector[i];
-        vector<GraphPoint*> SortedByCurrentPointDist = graph->GetSortedPointsByDistance(p);
-
-        if (!SortedByCurrentPointDist.empty()) {
-            p.Neighbors.push_back(SortedByCurrentPointDist.front());    //Lp
-            // Remove the first element from SortedByCurrentPointDist
-            SortedByCurrentPointDist.erase(SortedByCurrentPointDist.begin());  //Rp
-        }
-
-        vector<GraphPoint*> NeighborsCandidates = SortedByCurrentPointDist;     //Rp-Lp
-        for (const GraphPoint* neighbor : p.Neighbors)
-        {
-            auto it = find(NeighborsCandidates.begin(), NeighborsCandidates.end(), neighbor);
-            if (it != NeighborsCandidates.end())
-                NeighborsCandidates.erase(it);
-        }
-
-        for (int k = 0; k < NeighborsCandidates.size(); k++) 
-        {   
-            flag = true;
-            const GraphPoint& r = *(NeighborsCandidates[k]);
-            for (int j = 0; j < p.Neighbors.size(); j++) 
-            {
-                const GraphPoint& t = *(p.Neighbors[j]);
-                double pr = PNorm(r.Vector, p.Vector,2);
-                double pt = PNorm(t.Vector, p.Vector,2);
-                double rt = PNorm(r.Vector, t.Vector,2);
-
-                if (pr > pt && pr > rt) {
-                    flag = false;
-                    break;
-                }
-            }
-            if(flag)
-                p.Neighbors.push_back(NeighborsCandidates[k]);  //add to Lp (as Neighbor)
-        }
-    }
-}
 
 double SearchOnGraph(GraphPoint* QueryPoint,Graph* graph,int NearestNeighbors,int TankCandidates)
 {
     auto start_time = chrono::high_resolution_clock().now();
-    MRNG(graph);
     int StartPoint = rand() % graph->GetGraphSize(); //get a uniformly distributed point in the graph
     vector<GraphPoint>& graphVector = graph->GetGraphVector();
     vector<GraphPoint*> PoolOfCandidates; // Candidate set
