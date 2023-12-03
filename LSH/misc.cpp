@@ -101,21 +101,15 @@ double BruteForce(vector<double>* Distances,vector<vector<byte>> Points,vector<b
 
 /*Gets all the arguments from the command line (doesnt matter the order they are used)*/
 void GetArgs(int argc,char** argv,char** input_file,char** query_file,char** output_file,int* GraphNearestNeighbors,int* Extensions,int* RandomRestarts,int* NearestNeighbors,int* TankCandidates,char** method)
-{   
-    /*Booleans to mark which value will be passed*/
-    bool input_bool = false,query_bool = false,GraphNeighbors_bool = false,
-         Extensions_bool = false,output_bool = false,NearestNeighbors_bool = false,RandomRestarts_bool = false,TankCandidates_bool = false,
-         method_bool = false;
-    
+{    
     if(argc < 2) //will need to change to 7 later
     {
         cout<<"Please enter arguments!"<<endl;
         exit(-1);
     }
 
-    *GraphNearestNeighbors = 50,*Extensions = 30,*RandomRestarts = 1,*NearestNeighbors = 1; //Default values are passed
+    *GraphNearestNeighbors = 50,*Extensions = 30,*RandomRestarts = 1,*NearestNeighbors = 1,*TankCandidates = 20;; //Default values are passed
                                  //so even if user doesnt input them,these will be use
-    *TankCandidates = -1;
 
     for(int i=0;i < argc; i++)
     {   
@@ -172,11 +166,6 @@ void GetArgs(int argc,char** argv,char** input_file,char** query_file,char** out
             }
 
         }
-    }
-    if(strcmp(*method,"MRNG") == 0 && *TankCandidates == -1)
-    {
-        cout<<"If MRNG is selected,-l parameter must be passed!"<<endl;
-        exit(-1);
     }
 }
 
